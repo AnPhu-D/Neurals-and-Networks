@@ -1,4 +1,4 @@
-const url = 'http://10.13.51.221:7860/sdapi/v1/txt2img';
+url = 'http://10.13.51.221:7860/sdapi/v1/txt2img';
 key = "API Key Here"
 
 messages = [{
