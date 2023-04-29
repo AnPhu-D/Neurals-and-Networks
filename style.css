@@ -53,6 +53,7 @@ body {
     position: relative;
     width: 20vw;
     height: 20vw;
+    place-self: center;
 }
 
 #inputtext {
