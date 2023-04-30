@@ -36,6 +36,7 @@ window.onload = function () {
     document.getElementById("leftbutton").addEventListener("click", leftButton);
     document.getElementById("rightbutton").addEventListener("click", rightButton);
 
+    assignStats();
     updateStatDisplay();
 }
 
@@ -47,6 +48,34 @@ let playerStats = {
     wisdom: 10,
     charisma: 10,
 };
+
+function assignStats(){
+    const MAXIMUM = 15+14+13+11+10+8;
+    let valid = false;
+    while(!valid){
+        const v = prompt(`Put in your stat values separated by commas for (str,dex,con,int,wis,cha), they must add up to no more than ${MAXIMUM}`);
+        const values = v.split(',').map(x => +x);
+        if(values.length !== 6){
+            alert(`That is an invalid number of stat values, you entered ${values.length}. Expected: 6`);
+            continue;
+        }
+        if(values.filter(x=>isNaN(x)).length){
+            alert(`There are invalid input values that cannot be understood as numbers`);
+            continue;
+        }
+        if(values.filter(x=>x<0 || x>24).length){
+            alert(`There are values that are too high or low (minimum:0, maximum:24)`);
+            continue;
+        }
+        if(values.reduce((a,b) => a+b) > MAXIMUM){
+            alert(`Too high stat value. Observed ${values.reduce((a,b) => a+b)}. Expected <= ${MAXIMUM}`);
+            continue;
+        }
+        values.map((x, i) => playerStats[Object.keys(playerStats)[i]] = x);
+        valid = true;
+    }
+    updateStatDisplay();
+}
 
 function updateStatDisplay(){
     const ps = Object.entries(playerStats);
