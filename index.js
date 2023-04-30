@@ -26,7 +26,7 @@ Stable Diffusion Prompt: <series of phrases> End Stable Diffusion Prompt. "}
 window.onload = function () {
 
     document.getElementById("submittext").addEventListener("click", submitText);
-    document.getElementById("outputtext").innerText = messages[1]['content'];
+    typeWriterEffect(document.getElementById("outputtext"), 'innerText', messages[1]['content'], 1, 10); // document.getElementById("outputtext").innerText = messages[1]['content'];
     document.getElementById("sceneimage").src = sdresult[0];
     document.getElementById("leftbutton").addEventListener("click", leftButton);
     document.getElementById("rightbutton").addEventListener("click", rightButton);
@@ -40,7 +40,7 @@ function submitText() {
         'role': 'user',
         'content': `Player: "${document.getElementById("inputtext").value}"`
     });
-    const messagesWithSuffix = messages.slice(0);
+    const messagesWithSuffix = messages.slice(-8);
     messagesWithSuffix[messagesWithSuffix.length-1].content += '\n\nAs the DM, respond with a line of narration up to THREE sentences without dialogue, followed an optional line of dialogue up to THREE sentences from any Non player character. There are no dialogue nor actions (including movement) made by the player as the DM respectfully maintains player autonomy. If nothing happens, ask the player for another action.';
     console.log({messagesWithSuffix});
 
@@ -58,15 +58,22 @@ function submitText() {
         })
     }).then(response => response.json())
         .then(data => {
-            console.log('Success:', data);
-            console.log(data);
+
+            // console.log('Success:', data);
+            console.log(data, data?.usage?.total_tokens);
             console.log(data['choices'][0]['message']['content'])
             messages.push({ 'role': 'assistant', 'content': data['choices'][0]['message']['content'] });
             convomax = convomax + 1;
             convotrack = convomax;
             document.getElementById("outputtext").innerText = messages[convotrack * 2 + 1]['content'];
+
+            typeWriterEffect(document.getElementById("outputtext"), 'innerText', messages[convotrack * 2 + 1]['content'], 1, 10);
+
             messages2 = messages.slice();
             messages2.push(sdprompt);
+            document.getElementById("submittext").disabled = false;
+            document.getElementById("sceneimage").style.opacity = 0; // fade out (wait until next image to show up)
+            return; // donot image
 
             fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
@@ -110,6 +117,7 @@ function submitText() {
                             sdresult.push("data:image/png;base64," + data['images'][0]);
                             document.getElementById("sceneimage").src = sdresult[convotrack];
                             document.getElementById("submittext").disabled = false;
+                            document.getElementById("sceneimage").style.opacity = 1;
                         });
                 });
         });
@@ -130,4 +138,15 @@ function rightButton() {
         document.getElementById("outputtext").innerText = messages[convotrack * 2 + 1]['content'];
         document.getElementById("sceneimage").src = sdresult[convotrack];
     }
+}
+
+function typeWriterEffect(element, attribute, text, charactersPerTick, interval){
+    let i = 0;
+    const intervalId = setInterval(() => {
+        i += charactersPerTick;
+        element[attribute] = text.substring(0, i);
+        if(i >= text.length){
+            clearInterval(intervalId);
+        }
+    }, interval);
 }
