@@ -26,6 +26,11 @@ Stable Diffusion Prompt: <series of phrases> End Stable Diffusion Prompt. "}
 window.onload = function () {
 
     document.getElementById("submittext").addEventListener("click", submitText);
+    document.body.addEventListener('keydown', (e) => {
+        if((e.key==="Enter" || e.keyCode === 13) && e.ctrlKey){
+            submitText();
+        }
+    });
     typeWriterEffect(document.getElementById("outputtext"), 'innerText', messages[1]['content'], 1, 10); // document.getElementById("outputtext").innerText = messages[1]['content'];
     document.getElementById("sceneimage").src = sdresult[0];
     document.getElementById("leftbutton").addEventListener("click", leftButton);
@@ -40,6 +45,8 @@ function submitText() {
         'role': 'user',
         'content': `Player: "${document.getElementById("inputtext").value}"`
     });
+    document.getElementById("inputtext").value = ""; // clear user input
+    
     const messagesWithSuffix = messages.slice(-8);
     messagesWithSuffix[messagesWithSuffix.length-1].content += '\n\nAs the DM, respond with a line of narration up to THREE sentences without dialogue, followed an optional line of dialogue up to THREE sentences from any Non player character. There are no dialogue nor actions (including movement) made by the player as the DM respectfully maintains player autonomy. If nothing happens, ask the player for another action.';
     console.log({messagesWithSuffix});
@@ -142,11 +149,18 @@ function rightButton() {
 
 function typeWriterEffect(element, attribute, text, charactersPerTick, interval){
     let i = 0;
+    const skipAnimation = () => {
+        i = text.length;
+    };
+    
+    document.body.addEventListener('keydown', skipAnimation);
     const intervalId = setInterval(() => {
         i += charactersPerTick;
         element[attribute] = text.substring(0, i);
         if(i >= text.length){
             clearInterval(intervalId);
+            document.body.removeEventListener('keydown', skipAnimation);
         }
     }, interval);
+    
 }
