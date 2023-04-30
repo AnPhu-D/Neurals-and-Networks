@@ -6,41 +6,45 @@
     <script src="index.js"></script>
 </head>
 
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Neurals and Networks</h1>
-        </div>
-        <div class="content">
-            <div class="scene">
-                <div id="statsheet" class="stats">
-                    <h2>STATS</h2>
-                    <!--p>NAME: ChangeMe</p>
-                    <p>EXP: 0/1000</p>
-                    <p>HP: 1</p>
-                    <p>MP: 1</p!-->
+    <body>
+        <div class="hflex">
+            <div class="stat">
+                <h2>STATS</h2>
+                <!--p>NAME: ChangeMe</p>
+                <p>EXP: 0/1000</p>
+                <p>HP: 1</p>
+                <p>MP: 1</p!-->
+                <div>
                     <p class="statDisplay">STR: 1</p>
-                    <p class="statDisplay">DEF: 1</p>
+                    <p class="statDisplay">DEX: 1</p>
                     <p class="statDisplay">INT: 1</p>
                     <p class="statDisplay">WIS: 1</p>
                     <p class="statDisplay">AGI: 1</p>
                     <p class="statDisplay">LUK: 1</p>
                 </div>
-                <img id="sceneimage" src="start.png" alt="logo">
-                <div id="inventory" class="stats">
-                    <h2>INVENTORY</h2>
-                    <p>ITEMS: 0</p>
-                    <p>GOLD: 0</p>
+            </div>
+            <div class="chat">
+                
+                <div class="container">
+                    <div class="header">
+                        <h1>Neurals and Networks</h1>
+                    </div>
+                    <div class="content">
+                        <div class="scene">
+                            <img id="sceneimage" src="start.png" alt="logo">
+                        </div>
+                        <div class="userinputs">
+                            <button class="navbuttons" id="leftbutton" type="button">PREV</button>
+                            <div class="usersubmission">
+                                <textarea id="inputtext" type="text" name="playerAction" placeholder="Input Action"></textarea>
+                                <button id="submittext" type="submit">Query</button>
+                            </div>
+                            <button class="navbuttons" id="rightbutton" type="button">NEXT</button>
+                        </div>
+                        <p id="outputtext">Output</p>
+                    </div>
                 </div>
             </div>
-            <div class="userinputs">
-                <button class="navbuttons" id="leftbutton" type="button">PREV</button>
-                <div class="usersubmission">
-                    <textarea id="inputtext" type="text" name="playerAction" placeholder="Input Action"></textarea>
-                    <button id="submittext" type="submit">Query</button>
-                </div>
-                <button class="navbuttons" id="rightbutton" type="button">NEXT</button>
-            </div>
-            <p id="outputtext">Output</p>
         </div>
-    </div>
+    </body>
+</html>
