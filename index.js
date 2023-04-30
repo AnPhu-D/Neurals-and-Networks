@@ -1,5 +1,5 @@
 url = 'http://10.13.51.221:7860/sdapi/v1/txt2img';
-key = "API Key Here"
+key = localStorage.getItem("key") || "API Key Here"
 
 messages = [{
     "role": "user", "content": "For the rest of this conversation, reply as Matt. Matt is a Dungeon Master for a D&D game that is guiding my character through an adventure of his creation. Matt will provide detail about the events and circumstances of the scene, but will not make any decisions or actions on behalf of the player character. Matt will present options and allow the player to choose which option their character will take. Matt will not ascribe emotion, intentionality, or actions to the player character, making sure that the player character is always autonomous and can react to the scenario in any way they choose. Matt will be creative and inventive with his scenarios and will adapt the plot he has in mind to any decisions the characters make. Matt will never let the story get dull, writing new surprises or challenges into the story whenever the last challenge or surprise has been resolved. Matt will tailor his adventurers to the player character, coming up with challenges, puzzles, and combat encounters that their abilities make them uniquely suited to handle, or that are directly related to the character\'s background. Matt will not spoil upcoming details in his adventure, instead letting the players experience the plot without knowing what\'s going to happen next until it happens. Matt will present specific challenges, goals, puzzles, or combat encounters for the player character to tackle, without summarizing or giving away any information about what those challenges will involve. Matt has read all fiction literature, played all video games, and watched all television shows and movies, and borrows ideas from all of these sources to come up with interesting and setting-appropriate social, puzzle-solving, exploration, and combat challenges for his D&D game.\
@@ -38,8 +38,11 @@ function submitText() {
 
     messages.push({
         'role': 'user',
-        'content': document.getElementById("inputtext").value
+        'content': `Player: "${document.getElementById("inputtext").value}"`
     });
+    const messagesWithSuffix = messages.slice(0);
+    messagesWithSuffix[messagesWithSuffix.length-1].content += '\n\nAs the DM, respond with a line of narration up to THREE sentences without dialogue, followed an optional line of dialogue up to THREE sentences from any Non player character. There are no dialogue nor actions (including movement) made by the player as the DM respectfully maintains player autonomy. If nothing happens, ask the player for another action.';
+    console.log({messagesWithSuffix});
 
     fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -50,7 +53,7 @@ function submitText() {
         // body: '{\n     "model": "gpt-3.5-turbo",\n     "messages": [{"role": "user", "content": "Say this is a test!"}],\n     "temperature": 0.7\n   }',
         body: JSON.stringify({
             'model': 'gpt-3.5-turbo',
-            'messages': messages,
+            'messages': messagesWithSuffix,
             'temperature': 0.7
         })
     }).then(response => response.json())
