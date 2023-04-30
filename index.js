@@ -1,5 +1,5 @@
 url = 'http://10.13.51.221:7860/sdapi/v1/txt2img';
-key = "API Key Here"
+key = localStorage.getItem("key") || "API Key Here"
 
 messages = [{
     "role": "user", "content": "For the rest of this conversation, reply as Matt. Matt is a Dungeon Master for a D&D game that is guiding my character through an adventure of his creation. Matt will provide detail about the events and circumstances of the scene, but will not make any decisions or actions on behalf of the player character. Matt will present options and allow the player to choose which option their character will take. Matt will not ascribe emotion, intentionality, or actions to the player character, making sure that the player character is always autonomous and can react to the scenario in any way they choose. Matt will be creative and inventive with his scenarios and will adapt the plot he has in mind to any decisions the characters make. Matt will never let the story get dull, writing new surprises or challenges into the story whenever the last challenge or surprise has been resolved. Matt will tailor his adventurers to the player character, coming up with challenges, puzzles, and combat encounters that their abilities make them uniquely suited to handle, or that are directly related to the character\'s background. Matt will not spoil upcoming details in his adventure, instead letting the players experience the plot without knowing what\'s going to happen next until it happens. Matt will present specific challenges, goals, puzzles, or combat encounters for the player character to tackle, without summarizing or giving away any information about what those challenges will involve. Matt has read all fiction literature, played all video games, and watched all television shows and movies, and borrows ideas from all of these sources to come up with interesting and setting-appropriate social, puzzle-solving, exploration, and combat challenges for his D&D game.\
@@ -26,20 +26,194 @@ Stable Diffusion Prompt: <series of phrases> End Stable Diffusion Prompt. "}
 window.onload = function () {
 
     document.getElementById("submittext").addEventListener("click", submitText);
-    document.getElementById("outputtext").innerText = messages[1]['content'];
+    document.body.addEventListener('keydown', (e) => {
+        if((e.key==="Enter" || e.keyCode === 13) && e.ctrlKey){
+            submitText();
+        }
+    });
+    typeWriterEffect(document.getElementById("outputtext"), 'innerText', messages[1]['content'], 1, 10); // document.getElementById("outputtext").innerText = messages[1]['content'];
     document.getElementById("sceneimage").src = sdresult[0];
     document.getElementById("leftbutton").addEventListener("click", leftButton);
     document.getElementById("rightbutton").addEventListener("click", rightButton);
+
+    assignStats();
+    updateStatDisplay();
 }
 
-function submitText() {
+let playerStats = {
+    strength: 10,
+    dexterity: 10,
+    constitution: 10,
+    intelligence: 10,
+    wisdom: 10,
+    charisma: 10,
+};
 
+function assignStats(){
+    const MAXIMUM = 15+14+13+11+10+8;
+    let valid = false;
+    while(!valid){
+        const v = prompt(`Put in your stat values separated by commas for (str,dex,con,int,wis,cha), they must add up to no more than ${MAXIMUM}`);
+        const values = v.split(',').map(x => +x);
+        if(values.length !== 6){
+            alert(`That is an invalid number of stat values, you entered ${values.length}. Expected: 6`);
+            continue;
+        }
+        if(values.filter(x=>isNaN(x)).length){
+            alert(`There are invalid input values that cannot be understood as numbers`);
+            continue;
+        }
+        if(values.filter(x=>x<0 || x>24).length){
+            alert(`There are values that are too high or low (minimum:0, maximum:24)`);
+            continue;
+        }
+        if(values.reduce((a,b) => a+b) > MAXIMUM){
+            alert(`Too high stat value. Observed ${values.reduce((a,b) => a+b)}. Expected <= ${MAXIMUM}`);
+            continue;
+        }
+        values.map((x, i) => playerStats[Object.keys(playerStats)[i]] = x);
+        valid = true;
+    }
+    updateStatDisplay();
+}
+
+function updateStatDisplay(){
+    const ps = Object.entries(playerStats);
+    [...document.querySelectorAll('.statDisplay')].forEach((x,i) => x.innerText = `${ps[i][0].substring(0,3).toUpperCase()}: ${ps[i][1]}`);
+}
+
+// https://www.dmingwithcharisma.com/2011/10/dd-stats-in-simple-language/
+const abilityDescriptors = {
+    strength: `Morbidly weak, has significant trouble lifting own limbs
+Needs help to stand, can be knocked over by strong breezes
+Knocked off balance by swinging something dense
+Difficulty pushing an object of their weight
+Has trouble even lifting heavy objects
+Can literally pull their own weight
+Carries heavy objects for short distances
+Visibly toned, throws small objects for long distances
+Carries heavy objects with one arm
+Can break objects like wood with bare hands
+Able to out-wrestle a work animal or catch a falling person
+Can pull very heavy objects at appreciable speeds
+Pinnacle of brawn, able to out-lift several people`.split('\n'),
+    dexterity: `Barely mobile, probably significantly paralyzed
+Incapable of moving without noticeable effort or pain
+Visible paralysis or physical difficulty
+Significant klutz or very slow to react
+Somewhat slow, occasionally trips over own feet
+Capable of usually catching a small tossed object
+Able to often hit large targets
+Can catch or dodge a medium-speed surprise projectile
+Able to often hit small targets
+Light on feet, able to often hit small moving targets
+Graceful, able to flow from one action into another easily
+Very graceful, capable of dodging a number of thrown objects
+Moves like water, reacting to all situations with almost no effort`.split('\n'),
+    constitution: `Minimal immune system, body reacts violently to anything foreign
+Frail, suffers frequent broken bones
+Bruises very easily, knocked out by a light punch
+Unusually prone to disease and infection
+Easily winded, incapable of a full day’s hard labor
+Occasionally contracts mild sicknesses
+Can take a few hits before being knocked unconscious
+Able to labor for twelve hours most days
+Easily shrugs off most illnesses
+Able to stay awake for days on end
+Very difficult to wear down, almost never feels fatigue
+Never gets sick, even to the most virulent diseases
+Tireless paragon of physical endurance`.split('\n'),
+    intelligence: `Animalistic, no longer capable of logic or reason
+Barely able to function, very limited speech and knowledge
+Often resorts to charades to express thoughts
+Often misuses and mispronounces words
+Has trouble following trains of thought, forgets most unimportant things
+Knows what they need to know to get by
+Knows a bit more than is necessary, fairly logical
+Able to do math or solve logic puzzles mentally with reasonable accuracy
+Fairly intelligent, able to understand new tasks quickly
+Very intelligent, may invent new processes or uses for knowledge
+Highly knowledgeable, probably the smartest person many people know
+Able to make Holmesian leaps of logic
+Famous as a sage and genius`.split('\n'),
+    wisdom: `Seemingly incapable of thought, barely aware
+Rarely notices important or prominent items, people, or occurrences
+Seemingly incapable of forethought
+Often fails to exert common sense
+Forgets or opts not to consider options before taking action
+Makes reasoned decisions most of the time
+Able to tell when a person is upset
+Can get hunches about a situation that doesn’t feel right
+Reads people and situations fairly well
+Often used as a source of wisdom or decider of actions
+Reads people and situations very well, almost unconsciously
+Can tell minute differences among many situations
+Nearly prescient, able to reason far beyond logic`.split('\n'),
+    charisma: `Barely conscious, incredibly tactless and non-empathetic
+Minimal independent thought, relies heavily on others to think instead
+Has trouble thinking of others as people
+Terribly reticent, uninteresting, or rude
+Something of a bore or makes people mildly uncomfortable
+Capable of polite conversation
+Mildly interesting, knows what to say to the right people
+Interesting, knows what to say to most people
+Popular, receives greetings and conversations on the street
+Immediately likeable by many people, subject of favorable talk
+Life of the party, able to keep people entertained for hours
+Immediately likeable by almost everybody
+Renowned for wit, personality, and/or looks`.split('\n'),
+};
+
+async function submitText() {
     document.getElementById("submittext").disabled = true;
+
+    const action = document.getElementById("inputtext").value;
+    document.getElementById("inputtext").value = ""; // clear user input
+
+    const eventSuccessPayload = `Content: ${messages[messages.length-1].content}\nA person then tries to: ${action}\nIf the task is a menial task that should not require a roll, such as standing up or eating an apple, then print "TRIVIAL". If a task is nontrivial, then determine for a person with the following traits, determine which trait is the most relevant then determine how successful they would be in completing the task. If the task has no related trait, print "UNKNOWN". Otherwise, provide one line of reasoning and then state whether it is "ALWAYS SUCCEEDS", "LIKELY", "UNLIKELY", "ALWAYS FAILS", or "NOT POSSIBLE TO DETERMINE" if it is not possible to determine.`
+    + '\n' + Object.entries(playerStats).map(([k, v]) => `${k}: ${abilityDescriptors[k][v>>1]}`).join('\n');
+    console.log(eventSuccessPayload);
+    const eventSuccessResult = await (await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + key
+        },
+        body: JSON.stringify({
+            'model': 'gpt-3.5-turbo',
+            'messages': [{
+                role: "user",
+                content: eventSuccessPayload,
+            }],
+            'temperature': 0.7
+        })
+    })).json();
+    const eventSuccessJudgementMessage = eventSuccessResult.choices[0].message.content;
+    const eventSuccessJudgement = ["UNKNOWN", "ALWAYS SUCCEEDS", "UNLIKELY", "LIKELY", "ALWAYS FAILS", "TRIVIAL"].filter(x => eventSuccessJudgementMessage.toUpperCase().includes(x))[0] || "???";
+
+    const eventSuccessRates = {
+        "UNKNOWN": 0.5,
+        "TRIVIAL": 1,
+        "ALWAYS SUCCEEDS": 1,
+        "LIKELY": 0.7,
+        "UNLIKELY": 0.3,
+        "ALWAYS FAILS": 0.2,
+        "???": 0.8,
+    };
+
+    const eventSuccessFinal = Math.random() <= (eventSuccessRates[eventSuccessJudgement]||0.5);
+    console.log(eventSuccessJudgementMessage, eventSuccessJudgement, eventSuccessRates[eventSuccessJudgement], eventSuccessFinal);
+
+    const STATUS = eventSuccessFinal ? "The player's character will succeed in carrying out their action." : "The player's character will fail in carrying out their action.";
 
     messages.push({
         'role': 'user',
-        'content': document.getElementById("inputtext").value
+        'content': `Player: "${action}"`
     });
+    
+    const messagesWithSuffix = messages.slice(-8);
+    messagesWithSuffix[messagesWithSuffix.length-1].content += `\n\n${STATUS}\n\nAs the DM, respond with a line of narration up to THREE sentences without dialogue, followed an optional line of dialogue up to THREE sentences from any Non player character. There are no dialogue nor actions (including movement) made by the player as the DM respectfully maintains player autonomy. If nothing happens, ask the player for another action.`;
+    console.log({messagesWithSuffix});
 
     fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -50,20 +224,27 @@ function submitText() {
         // body: '{\n     "model": "gpt-3.5-turbo",\n     "messages": [{"role": "user", "content": "Say this is a test!"}],\n     "temperature": 0.7\n   }',
         body: JSON.stringify({
             'model': 'gpt-3.5-turbo',
-            'messages': messages,
+            'messages': messagesWithSuffix,
             'temperature': 0.7
         })
     }).then(response => response.json())
         .then(data => {
-            console.log('Success:', data);
-            console.log(data);
+
+            // console.log('Success:', data);
+            console.log(data, data?.usage?.total_tokens);
             console.log(data['choices'][0]['message']['content'])
             messages.push({ 'role': 'assistant', 'content': data['choices'][0]['message']['content'] });
             convomax = convomax + 1;
             convotrack = convomax;
             document.getElementById("outputtext").innerText = messages[convotrack * 2 + 1]['content'];
+
+            typeWriterEffect(document.getElementById("outputtext"), 'innerText', messages[convotrack * 2 + 1]['content'], 1, 10);
+
             messages2 = messages.slice();
             messages2.push(sdprompt);
+            document.getElementById("submittext").disabled = false;
+            document.getElementById("sceneimage").style.opacity = 0; // fade out (wait until next image to show up)
+            return; // donot image
 
             fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
@@ -107,6 +288,7 @@ function submitText() {
                             sdresult.push("data:image/png;base64," + data['images'][0]);
                             document.getElementById("sceneimage").src = sdresult[convotrack];
                             document.getElementById("submittext").disabled = false;
+                            document.getElementById("sceneimage").style.opacity = 1;
                         });
                 });
         });
@@ -127,4 +309,22 @@ function rightButton() {
         document.getElementById("outputtext").innerText = messages[convotrack * 2 + 1]['content'];
         document.getElementById("sceneimage").src = sdresult[convotrack];
     }
+}
+
+function typeWriterEffect(element, attribute, text, charactersPerTick, interval){
+    let i = 0;
+    const skipAnimation = () => {
+        i = text.length;
+    };
+    
+    document.body.addEventListener('keydown', skipAnimation);
+    const intervalId = setInterval(() => {
+        i += charactersPerTick;
+        element[attribute] = text.substring(0, i);
+        if(i >= text.length){
+            clearInterval(intervalId);
+            document.body.removeEventListener('keydown', skipAnimation);
+        }
+    }, interval);
+    
 }
