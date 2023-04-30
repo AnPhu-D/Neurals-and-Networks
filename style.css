@@ -12,6 +12,10 @@ body {
 .content {
     padding: 1em;
 }
+.header {
+    display: flex;
+    justify-content: center;
+}
 
 .hflex {
     display: flex;
