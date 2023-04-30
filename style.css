@@ -1,3 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter&family=Nunito:wght@400;900&family=Open+Sans:ital@0;1&display=swap');
+* {
+    font-family: "Open Sans", sans-serif;
+}
+
 body {
     background-color: #f1f1f1;
     font-family: Arial, Helvetica, sans-serif;
@@ -49,10 +54,8 @@ body {
 }
 
 #sceneimage {
-    overflow: hidden;
-    position: relative;
-    width: 20vw;
-    height: 20vw;
+    object-fit: contain;
+    width: 50vh;
 }
 
 #inputtext {
